@@ -23,8 +23,8 @@ class Profileo extends StatefulWidget {
 
 class _ProfileoState extends State<Profileo> {
   Dio dio = new Dio();
+  UserProfileo profile;
   Future<UserProfileo> fetchProfile(context) async {
-    UserProfileo profile;
     Directory tempDir = await getApplicationDocumentsDirectory();
     String tempPath = tempDir.path;
     var cj = new PersistCookieJar(tempPath);
@@ -84,7 +84,7 @@ class _ProfileoState extends State<Profileo> {
                   ),
                 ],
               );
-            } else if (profile.following == 1) {
+            } else if (profile.fan) {
               button = Container(
                 margin: EdgeInsets.only(top: 10.0),
                 height: 35.0,
@@ -96,7 +96,16 @@ class _ProfileoState extends State<Profileo> {
                     'follow back',
                     style: TextStyle(color: Colors.white),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    dio
+                        .post('http://hashtag2.gearhostpreview.com/follow.php',
+                            data: FormData.from({"ID": profile.id}))
+                        .then((response) {
+                      setState(() {
+                        fetchProfile(context);
+                      });
+                    });
+                  },
                 ),
               );
             } else {
@@ -111,7 +120,16 @@ class _ProfileoState extends State<Profileo> {
                     'follow',
                     style: TextStyle(color: Colors.white),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    dio
+                        .post('http://hashtag2.gearhostpreview.com/follow.php',
+                            data: FormData.from({"ID": profile.id}))
+                        .then((response) {
+                      setState(() {
+                        fetchProfile(context);
+                      });
+                    });
+                  },
                 ),
               );
             }
@@ -319,7 +337,19 @@ class _ProfileoState extends State<Profileo> {
           actions: <Widget>[
             FlatButton(
               child: Text('Unfollow'),
-              onPressed: () {},
+              onPressed: () {
+                dio
+                    .post('http://hashtag2.gearhostpreview.com/follow.php',
+                        data: FormData.from({"ID": profile.id}),
+                        options: Options(responseType: ResponseType.PLAIN))
+                    .then((response) {
+                  print(response.data);
+                  Navigator.of(context, rootNavigator: true).pop();
+                  setState(() {
+                    fetchProfile(context);
+                  });
+                });
+              },
             ),
             FlatButton(
               child: Text('Cancel'),

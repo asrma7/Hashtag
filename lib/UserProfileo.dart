@@ -1,11 +1,13 @@
 import 'package:hashtag/Posts.dart';
 
 class UserProfileo {
-  final String username, fullname, dp, status;
+  final String id, username, fullname, dp, status;
   final int followers, followings, postcount;
-  final int following;
+  int following;
+  bool fan;
   final List<Posts> post;
   UserProfileo({
+    this.id,
     this.username,
     this.fullname,
     this.dp,
@@ -15,6 +17,7 @@ class UserProfileo {
     this.postcount,
     this.post,
     this.following,
+    this.fan,
   });
   factory UserProfileo.fromJson(Map<String, dynamic> json) {
     List<Posts> posts = [];
@@ -23,6 +26,7 @@ class UserProfileo {
       posts.add(post);
     }
     return UserProfileo(
+      id: json['id'] as String,
       username: json['username'] as String,
       fullname: json['fullname'] as String,
       dp: json['dp'] as String,
@@ -32,6 +36,7 @@ class UserProfileo {
       postcount: json['postcount'] as int,
       post: posts,
       following: json['following'] as int,
+      fan: json['fan'] as bool,
     );
   }
 }
