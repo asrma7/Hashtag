@@ -1,0 +1,28 @@
+<?php
+	require_once 'dbconfig.php';
+	require_once 'notificationdb.php';
+	session_start();
+	$username = $_SESSION['user_name'];
+$result = $dbn->prepare("SELECT * FROM `{$_SESSION['user_id']}` ORDER BY `time` DESC");
+$result->execute();
+$data = $result->fetchAll(PDO::FETCH_ASSOC);
+$ret="";
+foreach ($data as $notification) {
+    $stmt = $db_con->prepare("SELECT dp FROM user WHERE username = :uname");
+        $stmt->bindParam(":uname",$notification['user']);
+        $stmt->execute();
+	$stmt = $stmt->fetch(PDO::FETCH_ASSOC);
+	if(substr($notification['link'],0,9)=='./profile'){
+	    $ret = $ret.'{"user":"'.$notification['user'].'", "notify":"'.$notification['notify'].'", "dp":"http://hashtag2.gearhostpreview.com'.ltrim($stmt['dp'],'.').'", "type":"profile", "posticon":"", "id":"'.str_replace("./profile.php?uid=","",$notification['link']).'"},';
+	}else{
+	    $id = str_replace("./viewpost.php?id=","",$notification['link']);
+    $stm = $db_con->prepare("SELECT pp FROM post WHERE ID = :id");
+        $stm->bindParam(":id",$id);
+        $stm->execute();
+	$stm = $stm->fetch(PDO::FETCH_ASSOC);
+	    $ret = $ret.'{"user":"'.$notification['user'].'", "notify":"'.$notification['notify'].'", "dp":"http://hashtag2.gearhostpreview.com'.ltrim($stmt['dp'],'.').'", "type":"post", "posticon":"'.$stm['pp'].'", "id":"'.$id.'"},';
+	}
+}
+	$ret = rtrim($ret,',');
+	echo '['.$ret.']';
+	?>
