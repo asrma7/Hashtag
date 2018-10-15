@@ -30,9 +30,12 @@ class _FirstLoginState extends State<FirstLogin> {
     if (images != null) {
       ImageProperties properties =
           await FlutterNativeImage.getImageProperties(images.path);
-      File compressedFile = await FlutterNativeImage.compressImage(images.path,
-          targetHeight: 600,
-          targetWidth: (properties.width * 600 / properties.width).round());
+      File compressedFile = await FlutterNativeImage.compressImage(
+        images.path,
+        quality: 100,
+        targetHeight: 600,
+        targetWidth: (properties.width * 600 / properties.height).round(),
+      );
       setState(() {
         _image = compressedFile;
       });

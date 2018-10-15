@@ -23,14 +23,18 @@ class _CameraShowState extends State<CameraShow> {
   final _caption = TextEditingController();
   final _tags = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool enabled = true;
   List<String> tag = [];
   Future _getImage() async {
     var images = await ImagePicker.pickImage(source: ImageSource.camera);
     ImageProperties properties =
         await FlutterNativeImage.getImageProperties(images.path);
-    File compressedFile = await FlutterNativeImage.compressImage(images.path,
-        targetHeight: 600,
-        targetWidth: (properties.width * 600 / properties.width).round());
+    File compressedFile = await FlutterNativeImage.compressImage(
+      images.path,
+      quality: 100,
+      targetHeight: 600,
+      targetWidth: (properties.width * 600 / properties.width).round(),
+    );
     setState(() {
       _image = compressedFile;
     });
@@ -55,7 +59,7 @@ class _CameraShowState extends State<CameraShow> {
       return Scaffold(
         body: SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.only(top:50.0),
+            padding: EdgeInsets.only(top: 50.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -128,48 +132,53 @@ class _CameraShowState extends State<CameraShow> {
                       color: Colors.blueAccent,
                     ),
                   ),
-                  onPressed: () async {
-                    String tags = "";
-                    for (int i = 0; i < tag.length; i++) {
-                      tags = tags + "," + tag[i];
-                    }
-                    focus.unfocus();
-                    if (_formKey.currentState.validate() && _image != null) {
-                      _caption.clear();
-                      Dio dio = new Dio();
-                      Directory tempDir =
-                          await getApplicationDocumentsDirectory();
-                      String tempPath = tempDir.path;
-                      var cj = new PersistCookieJar(tempPath);
-                      dio.cookieJar = cj;
-                      FormData formdata = new FormData.from({
-                        "caption": _caption.text,
-                        "tags": tags,
-                        "api": "myhashtagapikey",
-                        "pimg":
-                            new UploadFileInfo(_image, basename(_image.path)),
-                      });
-                      dio
-                          .post(
-                              'http://hashtag2.gearhostpreview.com/submit.php',
-                              data: formdata,
-                              options: Options(
-                                  method: 'POST',
-                                  responseType:
-                                      ResponseType.PLAIN // or ResponseType.JSON
-                                  ))
-                          .then((response) {
-                        Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text('Post Added successfully'),
-                          backgroundColor: Colors.green,
-                        ));
-                        print('success');
-                        Future.delayed(Duration(seconds: 1), () {
-                          Navigator.pop(context);
-                        });
-                      }).catchError((error) => print(error));
-                    }
-                  },
+                  onPressed: enabled
+                      ? () async {
+                          String tags = "";
+                          for (int i = 0; i < tag.length; i++) {
+                            tags = tags + "," + tag[i];
+                          }
+                          focus.unfocus();
+                          if (_formKey.currentState.validate() &&
+                              _image != null) {
+                            setState(() {
+                              enabled = false;
+                            });
+                            Dio dio = new Dio();
+                            Directory tempDir =
+                                await getApplicationDocumentsDirectory();
+                            String tempPath = tempDir.path;
+                            var cj = new PersistCookieJar(tempPath);
+                            dio.cookieJar = cj;
+                            FormData formdata = new FormData.from({
+                              "caption": _caption.text,
+                              "tags": tags,
+                              "api": "myhashtagapikey",
+                              "pimg": new UploadFileInfo(
+                                  _image, basename(_image.path)),
+                            });
+                            dio
+                                .post(
+                                    'http://hashtag2.gearhostpreview.com/submit.php',
+                                    data: formdata,
+                                    options: Options(
+                                        method: 'POST',
+                                        responseType: ResponseType
+                                            .PLAIN // or ResponseType.JSON
+                                        ))
+                                .then((response) {
+                              Scaffold.of(context).showSnackBar(SnackBar(
+                                content: Text('Post Added successfully'),
+                                backgroundColor: Colors.green,
+                              ));
+                              print('success');
+                              Future.delayed(Duration(seconds: 1), () {
+                                Navigator.pop(context);
+                              });
+                            }).catchError((error) => print(error));
+                          }
+                        }
+                      : null,
                   color: Colors.white,
                 ),
               ],
