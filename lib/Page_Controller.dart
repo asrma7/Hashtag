@@ -23,10 +23,14 @@ class _PageControllerState extends State<PagesController> {
   @override
   Widget build(BuildContext context) {
     void changepage(int i) {
-      if (i != index) {
+      if (i != index && i != 9) {
         if (widget.pagehistory.length >= 3) widget.pagehistory.removeAt(0);
         widget.pagehistory.remove(i);
         widget.pagehistory.add(i);
+        setState(() {
+          index = i;
+        });
+      } else {
         setState(() {
           index = i;
         });
