@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:hashtag/Search_Item.dart';
 import 'package:hashtag/Users.dart';
 import 'package:path_provider/path_provider.dart';
-import './BottomBar.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -14,14 +13,13 @@ List<Users> users;
 
 Future<List> fetchUser(String searchstring, context) async {
   Dio dio = new Dio();
-    Directory tempDir = await getApplicationDocumentsDirectory();
-    String tempPath = tempDir.path;
-    var cj = new PersistCookieJar(tempPath);
+  Directory tempDir = await getApplicationDocumentsDirectory();
+  String tempPath = tempDir.path;
+  var cj = new PersistCookieJar(tempPath);
   dio.cookieJar = cj;
   if (searchstring.isNotEmpty) {
     final response = await dio.get(
-        'http://hashtag2.gearhostpreview.com/search.php?query=' +
-            searchstring);
+        'http://hashtag2.gearhostpreview.com/search.php?query=' + searchstring);
     users.clear();
     for (int i = 0; i < jsonDecode(response.data).length; i++) {
       Users user = Users.fromJson(jsonDecode(response.data)[i]);
@@ -48,47 +46,41 @@ class _SearcherState extends State<Searcher> {
   @override
   Widget build(BuildContext context) {
     users = [];
-    return WillPopScope(
-      onWillPop: () {
-        widget.removepage();
-        return new Future(() => false);
-      },
-      child: Scaffold(
-        //resizeToAvoidBottomPadding: false,
-        appBar: AppBar(
-          title: TextField(
-            onChanged: (val) {
-              setState(() {
-                searchstring = val;
-              });
-            },
-            decoration:
-                InputDecoration(border: InputBorder.none, hintText: 'Search'),
-          ),
+    return Scaffold(
+      //resizeToAvoidBottomPadding: false,
+      appBar: AppBar(
+        title: TextField(
+          autofocus: true,
+          onChanged: (val) {
+            setState(() {
+              searchstring = val;
+            });
+          },
+          decoration:
+              InputDecoration(border: InputBorder.none, hintText: 'Search'),
         ),
-        body: Center(
-          child: FutureBuilder<List>(
-            future: fetchUser(searchstring, context),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return ListView.builder(
-                  physics: new ClampingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return SearchItem(
-                      snapshot.data[index],
-                      widget.changepage,
-                    );
-                  },
-                  itemCount: snapshot.data.length,
-                );
-              } else if (snapshot.hasError) {
-                return Text('error');
-              }
-              return Text('');
-            },
-          ),
+      ),
+      body: Center(
+        child: FutureBuilder<List>(
+          future: fetchUser(searchstring, context),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView.builder(
+                physics: new ClampingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return SearchItem(
+                    snapshot.data[index],
+                    widget.changepage,
+                  );
+                },
+                itemCount: snapshot.data.length,
+              );
+            } else if (snapshot.hasError) {
+              return Text('Internal error occured!');
+            }
+            return Text('');
+          },
         ),
-        bottomNavigationBar: BottomBar(widget.changepage),
       ),
     );
   }

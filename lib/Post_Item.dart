@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hashtag/Comments.dart';
+import 'package:hashtag/profileo.dart';
 
 import 'dart:async';
 
@@ -35,33 +36,42 @@ class _Post extends State<PostItem> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    new Container(
-                      width: 50.0,
-                      height: 50.0,
-                      margin: EdgeInsets.only(
-                        right: 10.0,
-                      ),
-                      decoration: new BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: new DecorationImage(
-                          fit: BoxFit.fill,
-                          image: new CachedNetworkImageProvider(
-                            widget.posts.usericon,
-                            scale: 50.0,
+                GestureDetector(
+                  child: Row(
+                    children: <Widget>[
+                      new Container(
+                        width: 50.0,
+                        height: 50.0,
+                        margin: EdgeInsets.only(
+                          right: 10.0,
+                        ),
+                        decoration: new BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: new DecorationImage(
+                            fit: BoxFit.fill,
+                            image: new NetworkImage(
+                              widget.posts.usericon,
+                              scale: 50.0,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    Text(
-                      widget.posts.user,
-                      style: TextStyle(
-                        fontFamily: 'FreightSans',
-                        fontSize: 15.0,
+                      Text(
+                        widget.posts.user,
+                        style: TextStyle(
+                          fontFamily: 'FreightSans',
+                          fontSize: 15.0,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => Profileo(widget.posts.user),
+                      ),
+                    );
+                  },
                 ),
                 GestureDetector(
                   child: Icon(

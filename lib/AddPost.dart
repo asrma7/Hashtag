@@ -33,15 +33,17 @@ class _AddPostState extends State<AddPost> {
   final _formKey = GlobalKey<FormState>();
   Future _getImage() async {
     var images = await ImagePicker.pickImage(source: ImageSource.gallery);
-    ImageProperties properties =
-        await FlutterNativeImage.getImageProperties(images.path);
-    File compressedFile = await FlutterNativeImage.compressImage(images.path,
-        quality: 80,
-        targetHeight: 300,
-        targetWidth: (properties.height * 300 / properties.height).round());
-    setState(() {
-      _image = compressedFile;
-    });
+    if (images != null) {
+      ImageProperties properties =
+          await FlutterNativeImage.getImageProperties(images.path);
+      File compressedFile = await FlutterNativeImage.compressImage(images.path,
+          quality: 80,
+          targetHeight: 300,
+          targetWidth: (properties.height * 300 / properties.height).round());
+      setState(() {
+        _image = compressedFile;
+      });
+    }
   }
 
   @override

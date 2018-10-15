@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
@@ -30,15 +29,17 @@ class _ProfileEditorState extends State<ProfileEditor> {
 
   Future _getImage() async {
     var images = await ImagePicker.pickImage(source: ImageSource.gallery);
-    ImageProperties properties =
-        await FlutterNativeImage.getImageProperties(images.path);
-    File compressedFile = await FlutterNativeImage.compressImage(images.path,
-        quality: 80,
-        targetHeight: 300,
-        targetWidth: (properties.height * 300 / properties.height).round());
-    setState(() {
-      _image = compressedFile;
-    });
+    if (images != null) {
+      ImageProperties properties =
+          await FlutterNativeImage.getImageProperties(images.path);
+      File compressedFile = await FlutterNativeImage.compressImage(images.path,
+          quality: 80,
+          targetHeight: 300,
+          targetWidth: (properties.height * 300 / properties.height).round());
+      setState(() {
+        _image = compressedFile;
+      });
+    }
   }
 
   File _image;
@@ -94,7 +95,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
                   image: new DecorationImage(
                     fit: BoxFit.fill,
                     image: (_image == null)
-                        ? CachedNetworkImageProvider(
+                        ? NetworkImage(
                             widget.userData.dp,
                           )
                         : FileImage(_image),

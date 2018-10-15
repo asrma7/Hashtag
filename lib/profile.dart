@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hashtag/Post_Item.dart';
 import 'package:hashtag/UserProfile.dart';
+import 'package:hashtag/ViewPost.dart';
 import 'package:hashtag/editprofile.dart';
 import 'package:path_provider/path_provider.dart';
 import './BottomBar.dart';
@@ -35,7 +36,7 @@ class _ProfileState extends State<Profile> {
         .timeout(Duration(seconds: 15))
         .then((response) {
       profile = UserProfile.fromJson(jsonDecode(response.data));
-    }).catchError((err) => print(err));
+    });
     return profile;
   }
 
@@ -90,7 +91,7 @@ class _ProfileState extends State<Profile> {
                                       shape: BoxShape.circle,
                                       image: new DecorationImage(
                                         fit: BoxFit.fill,
-                                        image: new CachedNetworkImageProvider(
+                                        image: new NetworkImage(
                                           profile.dp,
                                           scale: 100.0,
                                         ),
@@ -216,9 +217,20 @@ class _ProfileState extends State<Profile> {
                                                 crossAxisCount: 3),
                                         itemBuilder:
                                             (BuildContext context, int index) {
-                                          return CachedNetworkImage(
-                                            imageUrl:
-                                                profile.post[index].postimage,
+                                          return GestureDetector(
+                                            child: CachedNetworkImage(
+                                              imageUrl:
+                                                  profile.post[index].postimage,
+                                            ),
+                                            onTap: () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ViewPost(profile
+                                                          .post[index].id),
+                                                ),
+                                              );
+                                            },
                                           );
                                         }),
                                     new ListView.builder(
@@ -229,7 +241,7 @@ class _ProfileState extends State<Profile> {
                                       },
                                       itemCount: profile.post.length,
                                     ),
-                                    new Text("Hello Flutter"),
+                                    new Text("Not yet developed"),
                                   ],
                                 ),
                               ),
@@ -245,7 +257,7 @@ class _ProfileState extends State<Profile> {
             } else if (snapshot.hasError) {
               return Scaffold(
                 body: Center(
-                  child: Text('Error in connection'),
+                  child: Text('Internal Error occured!'),
                 ),
                 bottomNavigationBar: BottomBar(widget.changepage),
               );

@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hashtag/FirstLogin.dart';
 import 'package:hashtag/Login.dart';
-import './Searcher.dart';
+import 'package:hashtag/explore.dart';
 import './Notifications.dart';
 import './profile.dart';
 import './Home.dart';
@@ -52,7 +53,7 @@ class _PageControllerState extends State<PagesController> {
         }
       case 2:
         {
-          return Searcher(changepage, removepage);
+          return Explore(changepage, removepage);
         }
       case 4:
         {
@@ -61,6 +62,10 @@ class _PageControllerState extends State<PagesController> {
       case 5:
         {
           return Profile(changepage, removepage);
+        }
+      case 9:
+        {
+          return FirstLogin(changepage, removepage);
         }
       default:
         {

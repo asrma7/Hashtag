@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -102,7 +101,7 @@ class _CommentsState extends State<Comments> {
                                 shape: BoxShape.circle,
                                 image: new DecorationImage(
                                   fit: BoxFit.fill,
-                                  image: new CachedNetworkImageProvider(
+                                  image: new NetworkImage(
                                     comments[index].dp,
                                     scale: 40.0,
                                   ),

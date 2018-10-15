@@ -209,7 +209,11 @@ class _LoginState extends State<Login> {
         backgroundColor: Colors.green,
       ));
       Future.delayed(Duration(seconds: 1), () {
-        widget.changepage(1);
+        if (data['firsttime']) {
+          widget.changepage(9);
+        } else {
+          widget.changepage(1);
+        }
       });
     } else {
       Scaffold.of(contexts).showSnackBar(new SnackBar(

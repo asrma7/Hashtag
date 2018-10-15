@@ -77,7 +77,7 @@ class Notifications extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   image: new DecorationImage(
                                     fit: BoxFit.fill,
-                                    image: new CachedNetworkImageProvider(
+                                    image: new NetworkImage(
                                       notificationo[index].dp,
                                       scale: 40.0,
                                     ),
@@ -121,7 +121,7 @@ class Notifications extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   image: new DecorationImage(
                                     fit: BoxFit.fill,
-                                    image: new CachedNetworkImageProvider(
+                                    image: new NetworkImage(
                                       notificationo[index].dp,
                                       scale: 40.0,
                                     ),

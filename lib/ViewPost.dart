@@ -23,7 +23,6 @@ class ViewPost extends StatelessWidget {
         .get('http://hashtag2.gearhostpreview.com/postview.php?id=' + postid)
         .timeout(Duration(seconds: 15))
         .then((response) {
-      print(jsonDecode(response.data));
       post = Posts.fromJson(jsonDecode(response.data));
     }).catchError((err) => print(err));
     return post;

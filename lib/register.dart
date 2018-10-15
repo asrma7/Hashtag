@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -16,6 +17,7 @@ class _RegisterState extends State<Register> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _autovalidate = false;
   String uname, password;
   bool _obscureText = true;
   bool _isButtonDisabled = false;
@@ -53,6 +55,7 @@ class _RegisterState extends State<Register> {
                   Card(
                     margin: EdgeInsets.all(15.0),
                     child: Form(
+                      autovalidate: _autovalidate,
                       key: _formKey,
                       child: Column(
                         children: <Widget>[
@@ -117,9 +120,11 @@ class _RegisterState extends State<Register> {
                               controller: _email,
                               keyboardType: TextInputType.emailAddress,
                               validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Email can\'t be empty';
-                                }
+                                Pattern pattern =
+                                    r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+                                RegExp regex = new RegExp(pattern);
+                                if (!regex.hasMatch(value))
+                                  return 'Enter Valid Email';
                               },
                               decoration: InputDecoration(
                                 filled: true,
@@ -143,7 +148,7 @@ class _RegisterState extends State<Register> {
                               controller: _password,
                               obscureText: _obscureText,
                               validator: (value) {
-                                if (value.length<6) {
+                                if (value.length < 6) {
                                   return 'Password can\'t be less than 6 letters';
                                 }
                               },
@@ -209,6 +214,8 @@ class _RegisterState extends State<Register> {
                                         setState(() {
                                           _isButtonDisabled = true;
                                         });
+                                      } else {
+                                        _autovalidate = true;
                                       }
                                     }
                                   : null,
@@ -245,9 +252,10 @@ class _RegisterState extends State<Register> {
                 ))
         .timeout(Duration(seconds: 15))
         .then((response) {
-      if (response.data['status'] == 'success') {
+      Map<String, dynamic> data = jsonDecode(response.data);
+      if (data['status'] == 'success') {
         Scaffold.of(contexts).showSnackBar(new SnackBar(
-          content: Text(response.data['message']),
+          content: Text(data['message']),
           backgroundColor: Colors.green,
         ));
         Future.delayed(Duration(seconds: 1), () {
@@ -255,7 +263,7 @@ class _RegisterState extends State<Register> {
         });
       } else {
         Scaffold.of(contexts).showSnackBar(new SnackBar(
-          content: Text(response.data['message']),
+          content: Text(data['message']),
           backgroundColor: Colors.red,
         ));
         setState(() {
