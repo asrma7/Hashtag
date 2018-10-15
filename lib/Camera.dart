@@ -30,7 +30,7 @@ class _CameraShowState extends State<CameraShow> {
         await FlutterNativeImage.getImageProperties(images.path);
     File compressedFile = await FlutterNativeImage.compressImage(images.path,
         targetHeight: 600,
-        targetWidth: (properties.height * 600 / properties.height).round());
+        targetWidth: (properties.width * 600 / properties.width).round());
     setState(() {
       _image = compressedFile;
     });

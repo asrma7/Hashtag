@@ -33,9 +33,8 @@ class _ProfileEditorState extends State<ProfileEditor> {
       ImageProperties properties =
           await FlutterNativeImage.getImageProperties(images.path);
       File compressedFile = await FlutterNativeImage.compressImage(images.path,
-          quality: 80,
-          targetHeight: 300,
-          targetWidth: (properties.height * 300 / properties.height).round());
+          targetHeight: 600,
+          targetWidth: (properties.width * 600 / properties.width).round());
       setState(() {
         _image = compressedFile;
       });

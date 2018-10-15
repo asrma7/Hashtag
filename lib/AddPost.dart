@@ -38,7 +38,7 @@ class _AddPostState extends State<AddPost> {
           await FlutterNativeImage.getImageProperties(images.path);
       File compressedFile = await FlutterNativeImage.compressImage(images.path,
           targetHeight: 600,
-          targetWidth: (properties.height * 600 / properties.height).round());
+          targetWidth: (properties.width * 600 / properties.width).round());
       setState(() {
         _image = compressedFile;
       });
@@ -145,7 +145,7 @@ class _AddPostState extends State<AddPost> {
                     onPressed: () async {
                       String tags = "";
                       for (int i = 0; i < tag.length; i++) {
-                        tags = tags + "," + tag[i];
+                        tags = tags + "#" + tag[i];
                       }
                       focus.unfocus();
                       if (_formKey.currentState.validate() && _image != null) {
