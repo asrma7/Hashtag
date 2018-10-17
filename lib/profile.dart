@@ -40,6 +40,39 @@ class _ProfileState extends State<Profile> {
     return profile;
   }
 
+  int views = 0;
+  Widget view(profile) {
+    if (views == 0) {
+      return GridView.builder(
+          itemCount: profile.post.length,
+          gridDelegate:
+              new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+          itemBuilder: (BuildContext context, int index) {
+            return GestureDetector(
+              child: CachedNetworkImage(
+                imageUrl: profile.post[index].postimage,
+              ),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ViewPost(profile.post[index].id),
+                  ),
+                );
+              },
+            );
+          });
+    } else if (views == 1) {
+      return ListView.builder(
+        itemBuilder: (context, index) {
+          return PostItem(profile.post[index], dio);
+        },
+        itemCount: profile.post.length,
+      );
+    } else {
+      return new Text("Not yet developed");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     MediaQueryData queryData;
@@ -55,201 +88,186 @@ class _ProfileState extends State<Profile> {
             UserProfile profile = snapshot.data;
             if (snapshot.hasData) {
               return Scaffold(
-                appBar: AppBar(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(profile.username),
-                      GestureDetector(
-                        child: Icon(
-                          FontAwesomeIcons.ellipsisV,
-                          size: 20.0,
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                body: SingleChildScrollView(
-                  child: Container(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.all(15.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                body: NestedScrollView(
+                  headerSliverBuilder: (context, has) => <Widget>[
+                        SliverAppBar(
+                          pinned: true,
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  Container(
-                                    width: 100.0,
-                                    height: 100.0,
-                                    margin: EdgeInsets.only(
-                                      right: 10.0,
-                                    ),
-                                    decoration: new BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      image: new DecorationImage(
-                                        fit: BoxFit.fill,
-                                        image: new NetworkImage(
-                                          profile.dp,
-                                          scale: 100.0,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Column(
-                                    children: <Widget>[
-                                      Container(
-                                        width:
-                                            queryData.size.width - 100.0 - 40.0,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: <Widget>[
-                                            Column(
-                                              children: <Widget>[
-                                                Text(
-                                                  profile.postcount.toString(),
-                                                  style: TextStyle(
-                                                      fontSize: 20.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text('posts'),
-                                              ],
-                                            ),
-                                            Column(
-                                              children: <Widget>[
-                                                Text(
-                                                  profile.followers.toString(),
-                                                  style: TextStyle(
-                                                      fontSize: 20.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text('followers'),
-                                              ],
-                                            ),
-                                            Column(
-                                              children: <Widget>[
-                                                Text(
-                                                  profile.followings.toString(),
-                                                  style: TextStyle(
-                                                      fontSize: 20.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text('following'),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.only(top: 10.0),
-                                        decoration: BoxDecoration(
-                                            border:
-                                                Border.all(color: Colors.grey),
-                                            borderRadius:
-                                                BorderRadius.circular(10.0)),
-                                        width:
-                                            queryData.size.width - 100.0 - 40.0,
-                                        height: 35.0,
-                                        child: FlatButton(
-                                          splashColor: Colors.transparent,
-                                          highlightColor: Colors.transparent,
-                                          child: Text('Edit Profile'),
-                                          onPressed: () {
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        EditProfile()));
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                              Container(
-                                margin: EdgeInsets.all(10.0),
-                                padding: EdgeInsets.only(top: 10.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      profile.fullname,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(profile.status),
-                                  ],
+                              Text(profile.username),
+                              GestureDetector(
+                                child: Icon(
+                                  FontAwesomeIcons.ellipsisV,
+                                  size: 20.0,
                                 ),
-                              ),
+                              )
                             ],
                           ),
                         ),
-                        Divider(),
-                        DefaultTabController(
-                          length: 3,
-                          child: new Column(
-                            children: <Widget>[
-                              new TabBar(
-                                indicatorColor: Colors.transparent,
-                                tabs: <Widget>[
-                                  Icon(Icons.grid_on),
-                                  Icon(FontAwesomeIcons.square),
-                                  Icon(FontAwesomeIcons.tag),
-                                ],
-                              ),
-                              Divider(),
-                              Container(
-                                height: queryData.size.height - 130.0,
-                                child: new TabBarView(
+                        SliverToBoxAdapter(
+                          child: Container(
+                            decoration: new BoxDecoration(color: Colors.white),
+                            padding: EdgeInsets.only(
+                                top: 5.0, left: 15.0, right: 15.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Row(
                                   children: <Widget>[
-                                    new GridView.builder(
-                                        physics: NeverScrollableScrollPhysics(),
-                                        itemCount: profile.post.length,
-                                        gridDelegate:
-                                            new SliverGridDelegateWithFixedCrossAxisCount(
-                                                crossAxisCount: 3),
-                                        itemBuilder:
-                                            (BuildContext context, int index) {
-                                          return GestureDetector(
-                                            child: CachedNetworkImage(
-                                              imageUrl:
-                                                  profile.post[index].postimage,
-                                            ),
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ViewPost(profile
-                                                          .post[index].id),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        }),
-                                    new ListView.builder(
-                                      physics: ClampingScrollPhysics(),
-                                      itemBuilder: (context, index) {
-                                        return PostItem(
-                                            profile.post[index], dio);
-                                      },
-                                      itemCount: profile.post.length,
+                                    Container(
+                                      width: 100.0,
+                                      height: 100.0,
+                                      margin: EdgeInsets.only(
+                                        right: 10.0,
+                                      ),
+                                      decoration: new BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: new DecorationImage(
+                                          fit: BoxFit.fill,
+                                          image: new NetworkImage(
+                                            profile.dp,
+                                            scale: 100.0,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    new Text("Not yet developed"),
+                                    Column(
+                                      children: <Widget>[
+                                        Container(
+                                          width: queryData.size.width -
+                                              100.0 -
+                                              40.0,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
+                                            children: <Widget>[
+                                              Column(
+                                                children: <Widget>[
+                                                  Text(
+                                                    profile.postcount
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontSize: 20.0,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text('posts'),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: <Widget>[
+                                                  Text(
+                                                    profile.followers
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontSize: 20.0,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text('followers'),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: <Widget>[
+                                                  Text(
+                                                    profile.followings
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontSize: 20.0,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text('following'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.only(top: 10.0),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Colors.grey),
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0)),
+                                          width: queryData.size.width -
+                                              100.0 -
+                                              40.0,
+                                          height: 35.0,
+                                          child: FlatButton(
+                                            splashColor: Colors.transparent,
+                                            highlightColor: Colors.transparent,
+                                            child: Text('Edit Profile'),
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          EditProfile()));
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    )
                                   ],
                                 ),
-                              ),
-                            ],
+                                Container(
+                                  margin: EdgeInsets.all(10.0),
+                                  padding: EdgeInsets.only(top: 10.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        profile.fullname,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(profile.status),
+                                    ],
+                                  ),
+                                ),
+                                Divider(),
+                                new Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          views = 0;
+                                        });
+                                      },
+                                      icon: Icon(Icons.grid_on),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          views = 1;
+                                        });
+                                      },
+                                      icon: Icon(FontAwesomeIcons.square),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          views = 2;
+                                        });
+                                      },
+                                      icon: Icon(FontAwesomeIcons.tag),
+                                    ),
+                                  ],
+                                ),
+                                Divider(),
+                              ],
+                            ),
                           ),
                         ),
                       ],
-                    ),
+                  body: new Container(
+                    decoration: new BoxDecoration(color: Colors.white),
+                    child: view(profile),
                   ),
                 ),
                 bottomNavigationBar: BottomBar(widget.changepage),
