@@ -17,8 +17,9 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final _username = TextEditingController();
-  final _password = TextEditingController();
+  bool _autovalidate = false;
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String uname, password;
   bool _obscureText = true;
@@ -55,6 +56,7 @@ class _LoginState extends State<Login> {
                   Card(
                     margin: EdgeInsets.all(15.0),
                     child: Form(
+                      autovalidate: _autovalidate,
                       key: _formKey,
                       child: Column(
                         children: <Widget>[
@@ -117,6 +119,7 @@ class _LoginState extends State<Login> {
                           Padding(
                             padding: EdgeInsets.only(bottom: 10.0),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: <Widget>[
                                 RaisedButton(
                                   child: Text(
@@ -133,6 +136,8 @@ class _LoginState extends State<Login> {
                                             setState(() {
                                               _isButtonDisabled = true;
                                             });
+                                          } else {
+                                            _autovalidate = true;
                                           }
                                         }
                                       : null,
@@ -147,7 +152,7 @@ class _LoginState extends State<Login> {
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (context) =>
-                                                  Register()));
+                                                  Register(_username.text)));
                                     }),
                               ],
                             ),

@@ -53,7 +53,11 @@ class _ProfileEditorState extends State<ProfileEditor> {
   final _bio = TextEditingController();
   int gender;
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    _fullname.text = widget.userData.fullname;
+    _email.text = widget.userData.email;
+    _bio.text = widget.userData.status;
+    gender = widget.userData.gender;
     focus.addListener(() {
       if (focus.hasFocus)
         _fullname.selection = new TextSelection(
@@ -69,16 +73,11 @@ class _ProfileEditorState extends State<ProfileEditor> {
         _bio.selection =
             new TextSelection(baseOffset: 0, extentOffset: _bio.text.length);
     });
-    _fullname.text = _fullname.text.length == 0
-        ? _fullname.text = widget.userData.fullname
-        : _fullname.text;
-    _email.text = _email.text.length == 0
-        ? _email.text = widget.userData.email
-        : _email.text;
-    _bio.text =
-        _bio.text.length == 0 ? _bio.text = widget.userData.status : _bio.text;
+    super.initState();
+  }
 
-    gender = gender == null ? gender = widget.userData.gender : gender;
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Container(
         padding: EdgeInsets.all(10.0),

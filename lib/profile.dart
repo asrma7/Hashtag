@@ -92,18 +92,7 @@ class _ProfileState extends State<Profile> {
                   headerSliverBuilder: (context, has) => <Widget>[
                         SliverAppBar(
                           pinned: true,
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(profile.username),
-                              GestureDetector(
-                                child: Icon(
-                                  FontAwesomeIcons.ellipsisV,
-                                  size: 20.0,
-                                ),
-                              )
-                            ],
-                          ),
+                          title: Text(profile.username),
                         ),
                         SliverToBoxAdapter(
                           child: Container(
@@ -271,6 +260,89 @@ class _ProfileState extends State<Profile> {
                   ),
                 ),
                 bottomNavigationBar: BottomBar(widget.changepage),
+                endDrawer: new Drawer(
+                    semanticLabel: 'Profile Menu',
+                    child: Container(
+                      child: new ListView(children: <Widget>[
+                        FlatButton(
+                          splashColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.send),
+                              Container(
+                                child: Text(
+                                  'Feedback',
+                                  style: TextStyle(fontSize: 17.0),
+                                ),
+                                padding: EdgeInsets.only(left: 10.0),
+                              ),
+                            ],
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        FlatButton(
+                          splashColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          child: Row(
+                            children: <Widget>[
+                              Icon(FontAwesomeIcons.powerOff),
+                              Container(
+                                child: Text(
+                                  'Log out',
+                                  style: TextStyle(fontSize: 17.0),
+                                ),
+                                padding: EdgeInsets.only(left: 10.0),
+                              ),
+                            ],
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            widget.changepage(0);
+                          },
+                        ),
+                        FlatButton(
+                          splashColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          child: Row(
+                            children: <Widget>[
+                              Icon(FontAwesomeIcons.asterisk),
+                              Container(
+                                child: Text(
+                                  'Change Password',
+                                  style: TextStyle(fontSize: 17.0),
+                                ),
+                                padding: EdgeInsets.only(left: 10.0),
+                              ),
+                            ],
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        FlatButton(
+                          splashColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.delete_forever),
+                              Container(
+                                child: Text(
+                                  'De-activate',
+                                  style: TextStyle(fontSize: 17.0),
+                                ),
+                                padding: EdgeInsets.only(left: 10.0),
+                              ),
+                            ],
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ]),
+                    )),
               );
             } else if (snapshot.hasError) {
               return Scaffold(

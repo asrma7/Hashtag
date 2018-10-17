@@ -151,7 +151,7 @@ class _ProfileDisplayState extends State<ProfileDisplay> {
                     Text(profile.username),
                     GestureDetector(
                       child: Icon(
-                        FontAwesomeIcons.ellipsisV,
+                        FontAwesomeIcons.bars,
                         size: 20.0,
                       ),
                     )
