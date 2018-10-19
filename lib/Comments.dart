@@ -141,7 +141,7 @@ class _CommentsState extends State<Comments> {
                             focusNode: focus,
                             validator: (value) {
                               if (value.isEmpty) {
-                                return 'Username can\'t be empty';
+                                return 'Comment can\'t be empty';
                               }
                             },
                             onFieldSubmitted: (val) {

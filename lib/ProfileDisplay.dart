@@ -6,6 +6,7 @@ import 'package:hashtag/DM.dart';
 import 'package:hashtag/Post_Item.dart';
 import 'package:hashtag/UserProfileo.dart';
 import 'package:hashtag/ViewPost.dart';
+import 'package:web_socket_channel/io.dart';
 
 class ProfileDisplay extends StatefulWidget {
   final UserProfileo profile;
@@ -73,8 +74,15 @@ class _ProfileDisplayState extends State<ProfileDisplay> {
               highlightColor: Colors.transparent,
               child: Text('message'),
               onPressed: () {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => DM()));
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => DM(
+                          socketChannel: IOWebSocketChannel.connect(
+                            'wss://hashtag2.herokuapp.com',
+                          ),
+                        ),
+                  ),
+                );
               },
             ),
           ),
