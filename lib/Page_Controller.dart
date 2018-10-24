@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:hashtag/FirstLogin.dart';
-import 'package:hashtag/Login.dart';
+import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/explore.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import './Notifications.dart';
 import './profile.dart';
 import './Home.dart';
@@ -18,8 +18,12 @@ class PagesController extends StatefulWidget {
 }
 
 class _PageControllerState extends State<PagesController> {
-  int index = 0;
+  DBHelper dbHelper = new DBHelper();
+  String username;
+  int index = 1;
   String userids = "";
+  WebSocketChannel socketChannel;
+
   @override
   Widget build(BuildContext context) {
     void changepage(int i) {
@@ -67,13 +71,9 @@ class _PageControllerState extends State<PagesController> {
         {
           return Profile(changepage, removepage);
         }
-      case 9:
-        {
-          return FirstLogin(changepage, removepage);
-        }
       default:
         {
-          return Login(changepage, removepage);
+          return Home(changepage, removepage);
         }
     }
   }

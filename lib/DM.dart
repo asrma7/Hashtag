@@ -2,11 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hashtag/DBHelper.dart';
+import 'package:hashtag/message.dart';
+import 'package:hashtag/msg.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class DM extends StatefulWidget {
-  final WebSocketChannel socketChannel;
-  DM({@required this.socketChannel});
+  final String user;
+  DM({@required this.user});
   @override
   State<StatefulWidget> createState() {
     return _DMState();
@@ -14,10 +18,12 @@ class DM extends StatefulWidget {
 }
 
 class _DMState extends State<DM> {
+  String users;
   bool send = false;
   TextEditingController _controller = TextEditingController();
   ScrollController _scrollController = new ScrollController();
   List<Messages> messages = [];
+  WebSocketChannel socketChannel;
   @override
   void initState() {
     _controller.addListener(() {
@@ -37,8 +43,14 @@ class _DMState extends State<DM> {
 
   @override
   void dispose() {
+    socketChannel.sink.close();
     _controller.dispose();
     super.dispose();
+  }
+  @override
+  void deactivate() {
+    socketChannel.sink.close();
+    super.deactivate();
   }
 
   @override
@@ -58,39 +70,7 @@ class _DMState extends State<DM> {
                   top: 8.0, bottom: 60.0, right: 10.0, left: 10.0),
               itemCount: messages.length,
               itemBuilder: (context, index) {
-                return Flex(
-                  direction: Axis.horizontal,
-                  mainAxisAlignment: index % 3 == 0
-                      ? MainAxisAlignment.start
-                      : MainAxisAlignment.end,
-                  children: <Widget>[
-                    Container(
-                      padding: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 15.0, right: 15.0),
-                      margin: EdgeInsets.symmetric(vertical: 2.5),
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.7,
-                      ),
-                      decoration: index % 3 == 0
-                          ? BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey,
-                              ),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(30.0),
-                              ),
-                            )
-                          : BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(30.0),
-                              ),
-                            ),
-                      child: Text(messages[index].text,
-                          style: TextStyle(color: Colors.black)),
-                    ),
-                  ],
-                );
+                return MessageView(messages[index], users);
               },
             ),
           ),
@@ -125,7 +105,10 @@ class _DMState extends State<DM> {
                       onPressed: send
                           ? _sendMessage
                           : () {
-                              widget.socketChannel.sink.add('#');
+                              socketChannel.sink.add(
+                                  '{"type":"message", "content":"::hash::", "to":"' +
+                                      widget.user +
+                                      '"}');
                             },
                     )
                   ],
@@ -140,13 +123,22 @@ class _DMState extends State<DM> {
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      widget.socketChannel.sink.add(_controller.text);
+      socketChannel.sink.add('{"type":"message", "content":"' +
+          _controller.text +
+          '", "to":"' +
+          widget.user +
+          '"}');
       _controller.clear();
     }
   }
 
   void _getMessage() async {
-    widget.socketChannel.stream.listen((message) {
+    DBHelper dbHelper = new DBHelper();
+    String username = await dbHelper.getUsername();
+    users = username;
+    socketChannel = IOWebSocketChannel.connect('wss://strong-roarer.glitch.me');
+    socketChannel.sink.add('{"type":"username","content":"' + username + '"}');
+    socketChannel.stream.listen((message) {
       if (jsonDecode(message)['type'] == 'message') {
         setState(() {
           messages.add(Messages.fromJson(jsonDecode(message)['data']));
@@ -161,19 +153,5 @@ class _DMState extends State<DM> {
         print(message);
       }
     });
-  }
-}
-
-class Messages {
-  final String text, author;
-  final int time;
-  Messages({
-    this.time,
-    this.text,
-    this.author,
-  });
-  factory Messages.fromJson(Map<String, dynamic> json) {
-    return Messages(
-        time: json['time'], text: json['text'], author: json['author']);
   }
 }

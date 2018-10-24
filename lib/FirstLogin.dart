@@ -4,15 +4,15 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:hashtag/DBHelper.dart';
+import 'package:hashtag/Page_Controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 File _image;
 
 class FirstLogin extends StatefulWidget {
-  final Function changepage, removepage;
-  FirstLogin(this.changepage, this.removepage);
+  FirstLogin();
   @override
   State<StatefulWidget> createState() {
     return _FirstLoginState();
@@ -80,10 +80,15 @@ class _FirstLoginState extends State<FirstLogin> {
                       ),
                       onPressed: () async {
                         if (_image != null) {
-                          Directory tempDir =
-                              await getApplicationDocumentsDirectory();
-                          String tempPath = tempDir.path;
-                          var cj = new PersistCookieJar(tempPath);
+                          DBHelper dbhandler = DBHelper();
+                          var session = await dbhandler.getSession();
+                          List<Cookie> cookies = [
+                            new Cookie("PHPSESSID", session)
+                          ];
+                          var cj = new CookieJar();
+                          cj.saveFromResponse(
+                              Uri.parse('http://hashtag2.gearhostpreview.com'),
+                              cookies);
                           dio.cookieJar = cj;
                           dio
                               .post(
@@ -174,7 +179,8 @@ class _FirstLoginState extends State<FirstLogin> {
                         options: Options(responseType: ResponseType.PLAIN),
                       )
                           .then((val) {
-                        widget.changepage(1);
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (context) => PagesController()));
                       }).catchError((err) {
                         print('error occured' + err.toString());
                       });

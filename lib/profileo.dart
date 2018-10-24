@@ -4,9 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/ProfileDisplay.dart';
 import 'package:hashtag/UserProfileo.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 
 class Profileo extends StatelessWidget {
@@ -14,10 +14,13 @@ class Profileo extends StatelessWidget {
   Profileo(this.user);
   final Dio dio = new Dio();
   Future<UserProfileo> fetchProfile(context) async {
-    Directory tempDir = await getApplicationDocumentsDirectory();
-    String tempPath = tempDir.path;
+    DBHelper dbhandler = DBHelper();
     UserProfileo profile;
-    var cj = new PersistCookieJar(tempPath);
+    var session = await dbhandler.getSession();
+    List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
+    var cj = new CookieJar();
+    cj.saveFromResponse(
+        Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
     dio.cookieJar = cj;
     await dio
         .get('http://hashtag2.gearhostpreview.com/userprofile.php?user=' + user)

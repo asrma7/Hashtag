@@ -3,7 +3,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hashtag/Camera.dart';
 import 'package:hashtag/DM.dart';
 import './Post_Manager.dart';
-import 'package:web_socket_channel/io.dart';
 import 'dart:async';
 import './BottomBar.dart';
 
@@ -67,9 +66,7 @@ class Home extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => DM(
-                                socketChannel: IOWebSocketChannel.connect(
-                                  'wss://hashtag2.herokuapp.com',
-                                ),
+                                user: 'aarosh',
                               ),
                         ),
                       );

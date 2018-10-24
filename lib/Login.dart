@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'package:hashtag/DBHelper.dart';
+import 'package:hashtag/FirstLogin.dart';
+import 'package:hashtag/Page_Controller.dart';
 import 'package:hashtag/register.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:onesignal/onesignal.dart';
 
 class Login extends StatefulWidget {
-  final Function changepage, removepage;
-  Login(this.changepage, this.removepage);
+  Login();
   @override
   State<StatefulWidget> createState() {
     return _LoginState();
@@ -172,10 +172,6 @@ class _LoginState extends State<Login> {
 
   senddata(uname, pass) async {
     Dio dio = new Dio();
-    Directory tempDir = await getApplicationDocumentsDirectory();
-    String tempPath = tempDir.path;
-    var cj = new PersistCookieJar(tempPath);
-    dio.cookieJar = cj;
     FormData formData = new FormData.from(
         {"uname": uname, "password": pass, "api": 'myhashtagapikey'});
     dio
@@ -187,7 +183,7 @@ class _LoginState extends State<Login> {
                 ))
         .timeout(Duration(seconds: 15))
         .then((response) {
-      createsession(jsonDecode(response.data));
+      createsession(response.data, response.headers['set-cookie']);
     }).catchError((error) {
       Scaffold.of(contexts).showSnackBar(new SnackBar(
         content: Text('Check your internet connection'),
@@ -200,24 +196,29 @@ class _LoginState extends State<Login> {
     });
   }
 
-  createsession(Map<String, dynamic> data) async {
+  createsession(String response, header) async {
+    var data = jsonDecode(response);
     if (data['status'] == 'success') {
-      String session = data['session'];
-      Directory tempDir = await getApplicationDocumentsDirectory();
-      String tempPath = tempDir.path;
-      List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
-      var cj = new PersistCookieJar(tempPath);
-      cj.saveFromResponse(
-          Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
+      String userid = data['username'];
+      String fullname = data['fullname'];
+      String email = data['email'];
+      String session = data['session'] == null
+          ? header[0].toString().substring(10, 36)
+          : data['session'];
+      await OneSignal.shared.sendTag("user-id", userid);
+      DBHelper dbHandler = new DBHelper();
+      dbHandler.login(userid, fullname, email, session);
       Scaffold.of(contexts).showSnackBar(new SnackBar(
         content: Text(data['message']),
         backgroundColor: Colors.green,
       ));
       Future.delayed(Duration(seconds: 1), () {
         if (data['firsttime']) {
-          widget.changepage(9);
+          Navigator.of(contexts).pushReplacement(
+              MaterialPageRoute(builder: (contexts) => FirstLogin()));
         } else {
-          widget.changepage(1);
+          Navigator.of(contexts).pushReplacement(
+              MaterialPageRoute(builder: (contexts) => PagesController()));
         }
       });
     } else {

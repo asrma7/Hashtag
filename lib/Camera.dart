@@ -3,9 +3,9 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:hashtag/DBHelper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 File _image;
 
@@ -144,10 +144,17 @@ class _CameraShowState extends State<CameraShow> {
                               enabled = false;
                             });
                             Dio dio = new Dio();
-                            Directory tempDir =
-                                await getApplicationDocumentsDirectory();
-                            String tempPath = tempDir.path;
-                            var cj = new PersistCookieJar(tempPath);
+
+                            DBHelper dbhandler = DBHelper();
+                            var session = await dbhandler.getSession();
+                            List<Cookie> cookies = [
+                              new Cookie("PHPSESSID", session)
+                            ];
+                            var cj = new CookieJar();
+                            cj.saveFromResponse(
+                                Uri.parse(
+                                    'http://hashtag2.gearhostpreview.com'),
+                                cookies);
                             dio.cookieJar = cj;
                             FormData formdata = new FormData.from({
                               "caption": _caption.text,

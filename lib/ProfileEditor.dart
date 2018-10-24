@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/userdata.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 class ProfileEditor extends StatefulWidget {
   final UserData userData;
@@ -241,10 +241,15 @@ class _ProfileEditorState extends State<ProfileEditor> {
                             break;
                         }
                         Dio dio = new Dio();
-                        Directory tempDir =
-                            await getApplicationDocumentsDirectory();
-                        String tempPath = tempDir.path;
-                        var cj = new PersistCookieJar(tempPath);
+                        DBHelper dbhandler = DBHelper();
+                        var session = await dbhandler.getSession();
+                        List<Cookie> cookies = [
+                          new Cookie("PHPSESSID", session)
+                        ];
+                        var cj = new CookieJar();
+                        cj.saveFromResponse(
+                            Uri.parse('http://hashtag2.gearhostpreview.com'),
+                            cookies);
                         dio.cookieJar = cj;
                         FormData formdata;
                         if (_image != null) {

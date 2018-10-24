@@ -6,11 +6,14 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hashtag/ChangePassword.dart';
+import 'package:hashtag/DBHelper.dart';
+import 'package:hashtag/Login.dart';
 import 'package:hashtag/Post_Item.dart';
 import 'package:hashtag/UserProfile.dart';
 import 'package:hashtag/ViewPost.dart';
 import 'package:hashtag/editprofile.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:onesignal/onesignal.dart';
 import './BottomBar.dart';
 import 'dart:async';
 
@@ -24,12 +27,31 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  void showDemoDialog<T>({BuildContext context, Widget child}) {
+    showDialog<T>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => child,
+    ).then<void>((T value) {
+      // The value passed to Navigator.pop() or null.
+      if (value != null) {
+        if (value == 'deactivate') {
+          dio
+        .get('http://hashtag2.gearhostpreview.com/delacc.php');
+        }
+      }
+    });
+  }
+
   Dio dio = new Dio();
   Future<UserProfile> fetchProfile(context) async {
     UserProfile profile;
-    Directory tempDir = await getApplicationDocumentsDirectory();
-    String tempPath = tempDir.path;
-    var cj = new PersistCookieJar(tempPath);
+    DBHelper dbhandler = DBHelper();
+    var session = await dbhandler.getSession();
+    List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
+    var cj = new CookieJar();
+    cj.saveFromResponse(
+        Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
     dio.cookieJar = cj;
     await dio
         .get('http://hashtag2.gearhostpreview.com/userprofile.php')
@@ -261,95 +283,214 @@ class _ProfileState extends State<Profile> {
                 ),
                 bottomNavigationBar: BottomBar(widget.changepage),
                 endDrawer: new Drawer(
-                    semanticLabel: 'Profile Menu',
-                    child: Container(
-                      child: new ListView(children: <Widget>[
-                        FlatButton(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          child: Row(
-                            children: <Widget>[
-                              Icon(Icons.send),
-                              Container(
-                                child: Text(
-                                  'Feedback',
-                                  style: TextStyle(fontSize: 17.0),
-                                ),
-                                padding: EdgeInsets.only(left: 10.0),
+                  semanticLabel: 'Profile Menu',
+                  child: Container(
+                    child: new ListView(children: <Widget>[
+                      FlatButton(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.send),
+                            Container(
+                              child: Text(
+                                'Feedback',
+                                style: TextStyle(fontSize: 17.0),
                               ),
-                            ],
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                              padding: EdgeInsets.only(left: 10.0),
+                            ),
+                          ],
                         ),
-                        FlatButton(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          child: Row(
-                            children: <Widget>[
-                              Icon(FontAwesomeIcons.powerOff),
-                              Container(
-                                child: Text(
-                                  'Log out',
-                                  style: TextStyle(fontSize: 17.0),
-                                ),
-                                padding: EdgeInsets.only(left: 10.0),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      FlatButton(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Row(
+                          children: <Widget>[
+                            Icon(FontAwesomeIcons.powerOff),
+                            Container(
+                              child: Text(
+                                'Log out',
+                                style: TextStyle(fontSize: 17.0),
                               ),
-                            ],
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                            widget.changepage(0);
-                          },
+                              padding: EdgeInsets.only(left: 10.0),
+                            ),
+                          ],
                         ),
-                        FlatButton(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          child: Row(
-                            children: <Widget>[
-                              Icon(FontAwesomeIcons.asterisk),
-                              Container(
-                                child: Text(
-                                  'Change Password',
-                                  style: TextStyle(fontSize: 17.0),
-                                ),
-                                padding: EdgeInsets.only(left: 10.0),
+                        onPressed: () {
+                          DBHelper dbHelper = new DBHelper();
+                          dbHelper.logout();
+                          OneSignal.shared.deleteTag("user-id");
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (context) => Login()));
+                          dio.get(
+                              'http://hashtag2.gearhostpreview.com/logout.php');
+                        },
+                      ),
+                      FlatButton(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Row(
+                          children: <Widget>[
+                            Icon(FontAwesomeIcons.asterisk),
+                            Container(
+                              child: Text(
+                                'Change Password',
+                                style: TextStyle(fontSize: 17.0),
                               ),
-                            ],
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                              padding: EdgeInsets.only(left: 10.0),
+                            ),
+                          ],
                         ),
-                        FlatButton(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          child: Row(
-                            children: <Widget>[
-                              Icon(Icons.delete_forever),
-                              Container(
-                                child: Text(
-                                  'De-activate',
-                                  style: TextStyle(fontSize: 17.0),
-                                ),
-                                padding: EdgeInsets.only(left: 10.0),
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => ChangePassword()));
+                        },
+                      ),
+                      FlatButton(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.delete_forever),
+                            Container(
+                              child: Text(
+                                'De-activate',
+                                style: TextStyle(fontSize: 17.0),
                               ),
-                            ],
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                              padding: EdgeInsets.only(left: 10.0),
+                            ),
+                          ],
                         ),
-                      ]),
-                    )),
+                        onPressed: () {
+                          showDemoDialog<String>(
+                            context: context,
+                            child: CupertinoAlertDialog(
+                              title: const Text('Are you Sure?'),
+                              content: const Text(
+                                  'You are about to DEACTIVATE your account.'
+                                  'It cannot be restored at a later time! Continue?'),
+                              actions: <Widget>[
+                                CupertinoDialogAction(
+                                  child: const Text('Deactivate'),
+                                  isDestructiveAction: true,
+                                  onPressed: () {
+                                    Navigator.pop(context, 'deactivate');
+                                  },
+                                ),
+                                CupertinoDialogAction(
+                                  child: const Text('Cancel'),
+                                  onPressed: () {
+                                    Navigator.pop(context, 'Cancel');
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ]),
+                  ),
+                ),
               );
             } else if (snapshot.hasError) {
               return Scaffold(
                 body: Center(
                   child: Text('Internal Error occured!'),
                 ),
+                appBar: AppBar(
+                  title: Text('Profile'),
+                ),
                 bottomNavigationBar: BottomBar(widget.changepage),
+                endDrawer: new Drawer(
+                  semanticLabel: 'Profile Menu',
+                  child: Container(
+                    child: new ListView(children: <Widget>[
+                      FlatButton(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.send),
+                            Container(
+                              child: Text(
+                                'Feedback',
+                                style: TextStyle(fontSize: 17.0),
+                              ),
+                              padding: EdgeInsets.only(left: 10.0),
+                            ),
+                          ],
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      FlatButton(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Row(
+                          children: <Widget>[
+                            Icon(FontAwesomeIcons.powerOff),
+                            Container(
+                              child: Text(
+                                'Log out',
+                                style: TextStyle(fontSize: 17.0),
+                              ),
+                              padding: EdgeInsets.only(left: 10.0),
+                            ),
+                          ],
+                        ),
+                        onPressed: () {
+                          DBHelper dbHelper = new DBHelper();
+                          dbHelper.logout();
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (context) => Login()));
+                        },
+                      ),
+                      FlatButton(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Row(
+                          children: <Widget>[
+                            Icon(FontAwesomeIcons.asterisk),
+                            Container(
+                              child: Text(
+                                'Change Password',
+                                style: TextStyle(fontSize: 17.0),
+                              ),
+                              padding: EdgeInsets.only(left: 10.0),
+                            ),
+                          ],
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      FlatButton(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.delete_forever),
+                            Container(
+                              child: Text(
+                                'De-activate',
+                                style: TextStyle(fontSize: 17.0),
+                              ),
+                              padding: EdgeInsets.only(left: 10.0),
+                            ),
+                          ],
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ]),
+                  ),
+                ),
               );
             }
             return Scaffold(
@@ -357,6 +498,92 @@ class _ProfileState extends State<Profile> {
                 child: CupertinoActivityIndicator(),
               ),
               bottomNavigationBar: BottomBar(widget.changepage),
+              endDrawer: new Drawer(
+                semanticLabel: 'Profile Menu',
+                child: Container(
+                  child: new ListView(children: <Widget>[
+                    FlatButton(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.send),
+                          Container(
+                            child: Text(
+                              'Feedback',
+                              style: TextStyle(fontSize: 17.0),
+                            ),
+                            padding: EdgeInsets.only(left: 10.0),
+                          ),
+                        ],
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    FlatButton(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      child: Row(
+                        children: <Widget>[
+                          Icon(FontAwesomeIcons.powerOff),
+                          Container(
+                            child: Text(
+                              'Log out',
+                              style: TextStyle(fontSize: 17.0),
+                            ),
+                            padding: EdgeInsets.only(left: 10.0),
+                          ),
+                        ],
+                      ),
+                      onPressed: () {
+                        DBHelper dbHelper = new DBHelper();
+                        dbHelper.logout();
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (context) => Login()));
+                      },
+                    ),
+                    FlatButton(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      child: Row(
+                        children: <Widget>[
+                          Icon(FontAwesomeIcons.asterisk),
+                          Container(
+                            child: Text(
+                              'Change Password',
+                              style: TextStyle(fontSize: 17.0),
+                            ),
+                            padding: EdgeInsets.only(left: 10.0),
+                          ),
+                        ],
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    FlatButton(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.delete_forever),
+                          Container(
+                            child: Text(
+                              'De-activate',
+                              style: TextStyle(fontSize: 17.0),
+                            ),
+                            padding: EdgeInsets.only(left: 10.0),
+                          ),
+                        ],
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ]),
+                ),
+              ),
             );
           }),
     );

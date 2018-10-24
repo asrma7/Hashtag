@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hashtag/Comments.dart';
+import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/profileo.dart';
 
 import 'dart:async';
 
-import './Posts.dart';
+import 'package:hashtag/Posts.dart';
 
 class PostItem extends StatefulWidget {
   final Dio dio;
@@ -20,6 +21,7 @@ class PostItem extends StatefulWidget {
 }
 
 class _Post extends State<PostItem> {
+  DBHelper dbHelper = new DBHelper();
   double opacity = 0.0;
   @override
   Widget build(BuildContext context) {
@@ -152,6 +154,7 @@ class _Post extends State<PostItem> {
                                   responseType: ResponseType.PLAIN));
                           widget.posts.likecount += 1;
                         }
+                        dbHelper.updatePost(widget.posts);
                       });
                     },
                   ),
@@ -259,6 +262,7 @@ class _Post extends State<PostItem> {
                 responseType: ResponseType.PLAIN // or ResponseType.JSON
                 ));
         widget.posts.likecount++;
+        dbHelper.updatePost(widget.posts);
       }
       widget.posts.like = true;
       opacity = 1.0;

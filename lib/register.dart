@@ -27,6 +27,7 @@ class _RegisterState extends State<Register> {
   bool _autovalidate = false;
   String uname, password;
   bool _obscureText = true;
+  bool _obscureText2 = true;
   bool _isButtonDisabled = false;
   @override
   void dispose() {
@@ -192,7 +193,7 @@ class _RegisterState extends State<Register> {
                                   bottom: 20.0,
                                 ),
                                 child: TextFormField(
-                                  obscureText: _obscureText,
+                                  obscureText: _obscureText2,
                                   validator: (value) {
                                     if (value != _password.text) {
                                       return 'Password don\'t match';
@@ -209,7 +210,7 @@ class _RegisterState extends State<Register> {
                                     suffixIcon: IconButton(
                                       icon: Icon(Icons.remove_red_eye),
                                       onPressed: () => setState(
-                                          () => _obscureText = !_obscureText),
+                                          () => _obscureText2 = !_obscureText2),
                                     ),
                                   ),
                                 ),

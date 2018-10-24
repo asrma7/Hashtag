@@ -5,10 +5,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:async';
+import 'package:hashtag/DBHelper.dart';
 import 'dart:convert';
-import 'package:path_provider/path_provider.dart';
 
-import './Posts.dart';
+import 'package:hashtag/Posts.dart';
 import './Post_Item.dart';
 
 List<Posts> posts;
@@ -31,9 +31,29 @@ final SnackBar snackBar = SnackBar(
 class _PostManagerState extends State<PostManager> {
   Dio dio = new Dio();
   Future<List> fetchPost(context) async {
-    Directory tempDir = await getApplicationDocumentsDirectory();
-    String tempPath = tempDir.path;
-    var cj = new PersistCookieJar(tempPath);
+    DBHelper dbhandler = DBHelper();
+    var session = await dbhandler.getSession();
+    List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
+    var cj = new CookieJar();
+    cj.saveFromResponse(
+        Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
+    dio.cookieJar = cj;
+    var count = await dbhandler.postCount();
+    if (count > 0) {
+      var postlist = await dbhandler.getPosts();
+      return postlist;
+    } else {
+      return netPost(context);
+    }
+  }
+
+  Future<List> netPost(context) async {
+    DBHelper dbhandler = DBHelper();
+    var session = await dbhandler.getSession();
+    List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
+    var cj = new CookieJar();
+    cj.saveFromResponse(
+        Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
     dio.cookieJar = cj;
     await dio
         .get('http://hashtag2.gearhostpreview.com/feed.php')
@@ -57,7 +77,7 @@ class _PostManagerState extends State<PostManager> {
                 FlatButton(
                   child: Text('Reload'),
                   onPressed: () {
-                    fetchPost(context);
+                    netPost(context);
                     setState(() => {});
                   },
                 )
@@ -67,6 +87,7 @@ class _PostManagerState extends State<PostManager> {
       ));
     });
     error = false;
+    dbhandler.savePosts(posts);
     return posts;
   }
 
@@ -98,6 +119,8 @@ class _PostManagerState extends State<PostManager> {
                 },
                 itemCount: snapshot.data.length,
               );
+            } else if (snapshot.hasError) {
+              print(snapshot.error);
             }
             // By default, show a loading spinner
             return Text(
@@ -113,7 +136,7 @@ class _PostManagerState extends State<PostManager> {
   }
 
   Future<Null> _refresh() {
-    return fetchPost(context).then((posts) {
+    return netPost(context).then((posts) {
       setState(() => posts = posts);
     });
   }

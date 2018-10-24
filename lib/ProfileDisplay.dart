@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hashtag/DM.dart';
 import 'package:hashtag/Post_Item.dart';
 import 'package:hashtag/UserProfileo.dart';
 import 'package:hashtag/ViewPost.dart';
-import 'package:web_socket_channel/io.dart';
 
 class ProfileDisplay extends StatefulWidget {
   final UserProfileo profile;
@@ -19,6 +19,26 @@ class ProfileDisplay extends StatefulWidget {
 }
 
 class _ProfileDisplayState extends State<ProfileDisplay> {
+  void showDemoDialog<T>({BuildContext context, Widget child}) {
+    showDialog<T>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => child,
+    ).then<void>((T value) {
+      // The value passed to Navigator.pop() or null.
+      if (value != null) {
+        if (value == 'unfollow') {
+          widget.dio.post('http://hashtag2.gearhostpreview.com/follow.php',
+              data: FormData.from({"ID": widget.profile.id}),
+              options: Options(responseType: ResponseType.PLAIN));
+          setState(() {
+            widget.profile.following = 1;
+          });
+        }
+      }
+    });
+  }
+
   int views = 0;
   Widget view(profile, dio) {
     if (views == 0) {
@@ -77,9 +97,7 @@ class _ProfileDisplayState extends State<ProfileDisplay> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => DM(
-                          socketChannel: IOWebSocketChannel.connect(
-                            'wss://hashtag2.herokuapp.com',
-                          ),
+                          user: profile.username,
                         ),
                   ),
                 );
@@ -96,7 +114,33 @@ class _ProfileDisplayState extends State<ProfileDisplay> {
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               child: Icon(FontAwesomeIcons.userCheck),
-              onPressed: _unfollow,
+              onPressed: () {
+                showDemoDialog<String>(
+                  context: context,
+                  child: CupertinoAlertDialog(
+                    title: const Text('Are you Sure?'),
+                    content: Text('You are about to Unfollow ' +
+                        profile.fullname +
+                        '.'
+                        'Continue?'),
+                    actions: <Widget>[
+                      CupertinoDialogAction(
+                        child: const Text('Unfollow'),
+                        isDestructiveAction: true,
+                        onPressed: () {
+                          Navigator.pop(context, 'unfollow');
+                        },
+                      ),
+                      CupertinoDialogAction(
+                        child: const Text('Cancel'),
+                        onPressed: () {
+                          Navigator.pop(context, 'Cancel');
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -301,47 +345,6 @@ class _ProfileDisplayState extends State<ProfileDisplay> {
           child: view(profile, dio),
         ),
       ),
-    );
-  }
-
-  Future<Null> _unfollow() async {
-    return showDialog<Null>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Unfollow'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('You will never be satisfied.'),
-                Text('You\’re like me. I’m never satisfied.'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Unfollow'),
-              onPressed: () {
-                widget.dio.post(
-                    'http://hashtag2.gearhostpreview.com/follow.php',
-                    data: FormData.from({"ID": widget.profile.id}),
-                    options: Options(responseType: ResponseType.PLAIN));
-                Navigator.of(context, rootNavigator: true).pop();
-                setState(() {
-                  widget.profile.following = 1;
-                });
-              },
-            ),
-            FlatButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context, rootNavigator: true).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

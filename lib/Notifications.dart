@@ -7,10 +7,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html_textview/flutter_html_text.dart';
+import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/ViewPost.dart';
 import 'package:hashtag/notification.dart';
 import 'package:hashtag/profileo.dart';
-import 'package:path_provider/path_provider.dart';
 import './BottomBar.dart';
 import 'dart:async';
 
@@ -20,9 +20,12 @@ class Notifications extends StatelessWidget {
   final Dio dio = new Dio();
   Future<List> fetchNotification(context) async {
     List<Notificationo> notifications = [];
-    Directory tempDir = await getApplicationDocumentsDirectory();
-    String tempPath = tempDir.path;
-    var cj = new PersistCookieJar(tempPath);
+    DBHelper dbhandler = DBHelper();
+    var session = await dbhandler.getSession();
+    List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
+    var cj = new CookieJar();
+    cj.saveFromResponse(
+        Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
     dio.cookieJar = cj;
     await dio
         .get('http://hashtag2.gearhostpreview.com/notification.php')

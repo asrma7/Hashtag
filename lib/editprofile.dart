@@ -5,17 +5,20 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/ProfileEditor.dart';
 import 'package:hashtag/userdata.dart';
-import 'package:path_provider/path_provider.dart';
 
 class EditProfile extends StatelessWidget {
   final Dio dio = new Dio();
   Future<UserData> fetchuser(context) async {
     UserData profile = new UserData();
-    Directory tempDir = await getApplicationDocumentsDirectory();
-    String tempPath = tempDir.path;
-    var cj = new PersistCookieJar(tempPath);
+    DBHelper dbhandler = DBHelper();
+    var session = await dbhandler.getSession();
+    List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
+    var cj = new CookieJar();
+    cj.saveFromResponse(
+        Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
     dio.cookieJar = cj;
     await dio
         .get('http://hashtag2.gearhostpreview.com/getprofile.php')

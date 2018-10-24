@@ -6,8 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html_textview/flutter_html_text.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/comment.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 
 class Comments extends StatefulWidget {
@@ -26,9 +26,13 @@ class _CommentsState extends State<Comments> {
   Future<List> fetchNotification(context) async {
     List<Comment> comments = [];
     Comment comment;
-    Directory tempDir = await getApplicationDocumentsDirectory();
-    String tempPath = tempDir.path;
-    var cj = new PersistCookieJar(tempPath);
+
+    DBHelper dbhandler = DBHelper();
+    var session = await dbhandler.getSession();
+    List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
+    var cj = new CookieJar();
+    cj.saveFromResponse(
+        Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
     dio.cookieJar = cj;
     comments.clear();
     await dio
