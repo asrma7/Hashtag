@@ -60,7 +60,8 @@ class _MyAppState extends State<MyApp> {
     OneSignal.shared.setNotificationReceivedHandler((notification) {
       var notify = notification.payload.additionalData;
       if (notify['type'] == "message") {
-        chatDB.addchat(notify['id'], notify['message'], notify['time']);
+        chatDB.addchat(
+            notify['id'], notify['message'], notify['time'], 'recieved');
       }
     });
     OneSignal.shared.setNotificationOpenedHandler((notification) {

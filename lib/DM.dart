@@ -25,9 +25,10 @@ class _DMState extends State<DM> {
   TextEditingController _controller = TextEditingController();
   ScrollController _scrollController = new ScrollController();
   List<Messages> messages = [];
-Future<List<Messages>> getdata(user) async{
-  return await chatDB.getChats(user);
-}
+  Future<List<Messages>> getdata(user) async {
+    return await chatDB.getChats(user);
+  }
+
   WebSocketChannel socketChannel;
   @override
   void initState() {
@@ -71,7 +72,7 @@ Future<List<Messages>> getdata(user) async{
           Container(
             color: Colors.white,
             child: FutureBuilder(
-                future: getdata(users),
+                future: getdata(widget.user),
                 builder: (context, snapshot) {
                   return ListView.builder(
                     controller: _scrollController,
@@ -153,7 +154,11 @@ Future<List<Messages>> getdata(user) async{
         var data = jsonDecode(message)['data'];
         setState(() {
           messages.add(Messages.fromJson(data));
-          chatDB.addchat(data['author'], data['text'], data['time']);
+          if (data['author'] == username) {
+            chatDB.addchat(widget.user, data['text'], data['time'], 'sent');
+          } else {
+            chatDB.addchat(widget.user, data['text'], data['time'], 'recieved');
+          }
         });
         if (_scrollController.position.maxScrollExtent > 50 &&
             _scrollController.position.pixels - 50 <

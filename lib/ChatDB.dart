@@ -20,32 +20,37 @@ class ChatDB {
 
   Future<List> getchats() async {
     var dbClient = await db;
-    List c = await dbClient.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type = 'table'", null);
+    List c = await dbClient
+        .rawQuery("SELECT name FROM sqlite_master WHERE type = 'table'");
     return c;
   }
 
-  void addchat(name, message, time) async {
+  void addchat(name, message, time, type) async {
     var dbClient = await db;
-    await dbClient.execute(
-        "CREATE TABLE IF NOT EXISTS $name(user TEXT, message TEXT, time INTEGER)");
+    print(type);
+    if (type == "recieved") {
+      await dbClient.execute(
+          "CREATE TABLE IF NOT EXISTS $name(user TEXT, message TEXT, time INTEGER)");
+    }
     await dbClient.transaction((txn) async {
       return await txn.rawInsert(
-          'INSERT INTO $name(user, message, time) VALUES(' +
+          'INSERT INTO $name(user, message, time) VALUES(\'' +
               name +
               '\'' +
               ',' +
+              '\'' +
               message +
+              '\'' +
               ',' +
-              '\'' +
               time.toString() +
-              '\'' +
               ')');
     });
   }
 
   Future<List<Messages>> getChats(user) async {
     var dbClient = await db;
+    await dbClient.execute(
+        "CREATE TABLE IF NOT EXISTS $user(user TEXT, message TEXT, time INTEGER)");
     List<Map> list = await dbClient.rawQuery('SELECT * FROM $user');
     List<Messages> messages = new List();
     for (int i = 0; i < list.length; i++) {

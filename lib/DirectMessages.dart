@@ -34,24 +34,28 @@ class _DirectMessagesState extends State<DirectMessages> {
             return ListView.builder(
               itemBuilder: (context, ind) {
                 chatuser = list[ind]['name'];
-                return GestureDetector(
-                  child: Container(
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black12)),
-                    padding: EdgeInsets.all(20.0),
-                    child: Text(
-                      chatuser,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 17.0),
+                if (chatuser != 'android_metadata') {
+                  return GestureDetector(
+                    child: Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black12)),
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        chatuser,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 17.0),
+                      ),
                     ),
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => DM(
-                              user: list[ind]['name'],
-                            )));
-                  },
-                );
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => DM(
+                                user: list[ind]['name'],
+                              )));
+                    },
+                  );
+                } else {
+                  return Container();
+                }
               },
               itemCount: list.length,
             );
