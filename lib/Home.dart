@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hashtag/Camera.dart';
-import 'package:hashtag/DM.dart';
+import 'package:hashtag/DirectMessages.dart';
 import './Post_Manager.dart';
 import 'dart:async';
 import './BottomBar.dart';
@@ -65,9 +65,7 @@ class Home extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => DM(
-                                user: 'aarosh',
-                              ),
+                          builder: (context) => DirectMessages(),
                         ),
                       );
                     },

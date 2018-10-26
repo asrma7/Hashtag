@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hashtag/ChatDB.dart';
 import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/DM.dart';
 import 'package:hashtag/Login.dart';
@@ -20,6 +21,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  ChatDB chatDB = new ChatDB();
   final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey(debugLabel: "Main Navigator");
   final DBHelper dbHelper = new DBHelper();
@@ -39,7 +41,7 @@ class _MyAppState extends State<MyApp> {
     },
   );
   static const int _whitePrimaryValue = 0xFFFFFFFF;
-  @override
+
   void initState() {
     OneSignal.shared.init(
       "98d1cec1-df0d-4d65-9dfe-0460832315ce",
@@ -50,17 +52,22 @@ class _MyAppState extends State<MyApp> {
     );
     OneSignal.shared
         .setInFocusDisplayType(OSNotificationDisplayType.notification);
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
     OneSignal.shared.setNotificationReceivedHandler((notification) {
       var notify = notification.payload.additionalData;
       if (notify['type'] == "message") {
-        print(notify['id'] + ", " + notify['message']);
+        chatDB.addchat(notify['id'], notify['message'], notify['time']);
       }
     });
     OneSignal.shared.setNotificationOpenedHandler((notification) {
       var notify = notification.notification.payload.additionalData;
       if (notify["type"] == "message") {
         Navigator.push(
-          navigatorKey.currentContext,
+          context,
           MaterialPageRoute(
             builder: (_) => DM(user: notify['id']),
           ),
@@ -69,7 +76,7 @@ class _MyAppState extends State<MyApp> {
       }
       if (notify["type"] == "user") {
         Navigator.push(
-          navigatorKey.currentContext,
+          context,
           MaterialPageRoute(
             builder: (_) => Profileo(notify["id"]),
           ),
@@ -77,14 +84,14 @@ class _MyAppState extends State<MyApp> {
       }
       if (notify["type"] == "post") {
         Navigator.push(
-          navigatorKey.currentContext,
+          context,
           MaterialPageRoute(
             builder: (_) => ViewPost(notify["id"]),
           ),
         );
       }
     });
-    super.initState();
+    super.didChangeDependencies();
   }
 
   @override

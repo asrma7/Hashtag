@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hashtag/ChatDB.dart';
 import 'package:hashtag/DBHelper.dart';
 import 'package:hashtag/message.dart';
 import 'package:hashtag/msg.dart';
@@ -19,10 +20,14 @@ class DM extends StatefulWidget {
 
 class _DMState extends State<DM> {
   String users;
+  ChatDB chatDB = new ChatDB();
   bool send = false;
   TextEditingController _controller = TextEditingController();
   ScrollController _scrollController = new ScrollController();
   List<Messages> messages = [];
+Future<List<Messages>> getdata(user) async{
+  return await chatDB.getChats(user);
+}
   WebSocketChannel socketChannel;
   @override
   void initState() {
@@ -47,6 +52,7 @@ class _DMState extends State<DM> {
     _controller.dispose();
     super.dispose();
   }
+
   @override
   void deactivate() {
     socketChannel.sink.close();
@@ -58,21 +64,25 @@ class _DMState extends State<DM> {
     return Scaffold(
       resizeToAvoidBottomPadding: true,
       appBar: AppBar(
-        title: Text("Direct"),
+        title: Text(widget.user),
       ),
       body: Stack(
         children: <Widget>[
           Container(
             color: Colors.white,
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: EdgeInsets.only(
-                  top: 8.0, bottom: 60.0, right: 10.0, left: 10.0),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                return MessageView(messages[index], users);
-              },
-            ),
+            child: FutureBuilder(
+                future: getdata(users),
+                builder: (context, snapshot) {
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.only(
+                        top: 8.0, bottom: 60.0, right: 10.0, left: 10.0),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      return MessageView(messages[index], users);
+                    },
+                  );
+                }),
           ),
           Positioned(
             bottom: 0.0,
@@ -140,8 +150,10 @@ class _DMState extends State<DM> {
     socketChannel.sink.add('{"type":"username","content":"' + username + '"}');
     socketChannel.stream.listen((message) {
       if (jsonDecode(message)['type'] == 'message') {
+        var data = jsonDecode(message)['data'];
         setState(() {
-          messages.add(Messages.fromJson(jsonDecode(message)['data']));
+          messages.add(Messages.fromJson(data));
+          chatDB.addchat(data['author'], data['text'], data['time']);
         });
         if (_scrollController.position.maxScrollExtent > 50 &&
             _scrollController.position.pixels - 50 <
