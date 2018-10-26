@@ -27,40 +27,21 @@ class ChatDB {
 
   void addchat(name, message, time) async {
     var dbClient = await db;
-    List c = await dbClient.rawQuery(
-        "SELECT name FROM sqlite_master WHERE name = '$name' AND type = 'table'",
-        null);
-    if (c.length > 0) {
-      await dbClient.transaction((txn) async {
-        return await txn.rawInsert(
-            'INSERT INTO Post(id, user, usericon, postimage, tags, caption, like, likecount, time) VALUES(' +
-                name +
-                '\'' +
-                ',' +
-                message +
-                ',' +
-                '\'' +
-                time.toString() +
-                '\'' +
-                ')');
-      });
-    } else {
-      await dbClient
-          .execute("CREATE TABLE User(user TEXT, message TEXT, time INTEGER)");
-      await dbClient.transaction((txn) async {
-        return await txn.rawInsert(
-            'INSERT INTO Post(user, message, time) VALUES(' +
-                name +
-                '\'' +
-                ',' +
-                message +
-                ',' +
-                '\'' +
-                time.toString() +
-                '\'' +
-                ')');
-      });
-    }
+    await dbClient.execute(
+        "CREATE TABLE IF NOT EXISTS $name(user TEXT, message TEXT, time INTEGER)");
+    await dbClient.transaction((txn) async {
+      return await txn.rawInsert(
+          'INSERT INTO $name(user, message, time) VALUES(' +
+              name +
+              '\'' +
+              ',' +
+              message +
+              ',' +
+              '\'' +
+              time.toString() +
+              '\'' +
+              ')');
+    });
   }
 
   Future<List<Messages>> getChats(user) async {
