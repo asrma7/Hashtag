@@ -5,8 +5,7 @@ import 'package:intl/intl.dart';
 
 class MessageView extends StatefulWidget {
   final Messages messages;
-  final String username;
-  MessageView(this.messages, this.username);
+  MessageView(this.messages);
   @override
   State<StatefulWidget> createState() {
     return _MessagesState();
@@ -24,7 +23,7 @@ class _MessagesState extends State<MessageView> {
     if (messages.text == "::hash::") {
       return Flex(
         direction: Axis.horizontal,
-        mainAxisAlignment: messages.author == widget.username
+        mainAxisAlignment: messages.type == "sent"
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
         children: <Widget>[
@@ -59,7 +58,7 @@ class _MessagesState extends State<MessageView> {
     }
     return Flex(
       direction: Axis.horizontal,
-      mainAxisAlignment: messages.author == widget.username
+      mainAxisAlignment: messages.type == "sent"
           ? MainAxisAlignment.end
           : MainAxisAlignment.start,
       children: <Widget>[
@@ -74,7 +73,7 @@ class _MessagesState extends State<MessageView> {
                 constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width * 0.7,
                 ),
-                decoration: messages.author == widget.username
+                decoration: messages.type == "sent"
                     ? BoxDecoration(
                         color: Colors.grey[300],
                         borderRadius: BorderRadius.all(

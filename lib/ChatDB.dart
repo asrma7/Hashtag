@@ -25,16 +25,20 @@ class ChatDB {
     return c;
   }
 
+  void deleteChats(user) async {
+    var dbClient = await db;
+    await dbClient.execute('DELETE FROM $user');
+  }
+
   void addchat(name, message, time, type) async {
     var dbClient = await db;
-    print(type);
     if (type == "recieved") {
       await dbClient.execute(
-          "CREATE TABLE IF NOT EXISTS $name(user TEXT, message TEXT, time INTEGER)");
+          "CREATE TABLE IF NOT EXISTS $name(user TEXT, message TEXT, time INTEGER, type TEXT)");
     }
     await dbClient.transaction((txn) async {
       return await txn.rawInsert(
-          'INSERT INTO $name(user, message, time) VALUES(\'' +
+          'INSERT INTO $name(user, message, time, type) VALUES(\'' +
               name +
               '\'' +
               ',' +
@@ -43,6 +47,10 @@ class ChatDB {
               '\'' +
               ',' +
               time.toString() +
+              ',' +
+              '\'' +
+              type +
+              '\'' +
               ')');
     });
   }
@@ -50,8 +58,8 @@ class ChatDB {
   Future<List<Messages>> getChats(user) async {
     var dbClient = await db;
     await dbClient.execute(
-        "CREATE TABLE IF NOT EXISTS $user(user TEXT, message TEXT, time INTEGER)");
-    List<Map> list = await dbClient.rawQuery('SELECT * FROM $user');
+        "CREATE TABLE IF NOT EXISTS $user(user TEXT, message TEXT, time INTEGER, type TEXT)");
+    List<Map> list = await dbClient.rawQuery('SELECT * FROM $user ORDER BY time DESC');
     List<Messages> messages = new List();
     for (int i = 0; i < list.length; i++) {
       messages.add(
@@ -59,6 +67,7 @@ class ChatDB {
           author: list[i]["user"],
           text: list[i]["message"],
           time: list[i]["time"],
+          type: list[i]["type"],
         ),
       );
     }

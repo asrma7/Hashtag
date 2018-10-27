@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hashtag/ChatDB.dart';
@@ -21,12 +25,49 @@ class DM extends StatefulWidget {
 class _DMState extends State<DM> {
   String users;
   ChatDB chatDB = new ChatDB();
+  Dio dio = new Dio();
+  DBHelper dbHelper = new DBHelper();
   bool send = false;
   TextEditingController _controller = TextEditingController();
   ScrollController _scrollController = new ScrollController();
   List<Messages> messages = [];
+  List<Messages> webmsg = [];
   Future<List<Messages>> getdata(user) async {
-    return await chatDB.getChats(user);
+    String types;
+    messages.clear();
+    webmsg.clear();
+    messages = await chatDB.getChats(user);
+    var session = await dbHelper.getSession();
+    List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
+    var cj = new CookieJar();
+    cj.saveFromResponse(
+        Uri.parse('http://hashtag2.gearhostpreview.com'), cookies);
+    dio.cookieJar = cj;
+    await dio
+        .get('http://hashtag2.gearhostpreview.com/getmobilechat.php?user=' +
+            user)
+        .timeout(Duration(seconds: 15))
+        .then((response) {
+      var res = jsonDecode(response.data);
+      for (int i = 0; i < res.length; i++) {
+        types = res[i]["author"] == user ? "recieved" : "sent";
+        Messages msg = Messages.fromJson(res[i], types);
+        webmsg.add(msg);
+      }
+    });
+    if (webmsg!=null) {
+      messages = webmsg;
+      savemsg(webmsg);
+    }
+    return messages;
+  }
+
+  void savemsg(List<Messages> webmsg) async {
+    chatDB.deleteChats(widget.user);
+    for (int i = 0; i < webmsg.length; i++) {
+      chatDB.addchat(
+          widget.user, webmsg[i].text, webmsg[i].time, webmsg[i].type);
+    }
   }
 
   WebSocketChannel socketChannel;
@@ -70,21 +111,31 @@ class _DMState extends State<DM> {
       body: Stack(
         children: <Widget>[
           Container(
-            color: Colors.white,
-            child: FutureBuilder(
+              color: Colors.white,
+              child: FutureBuilder(
                 future: getdata(widget.user),
                 builder: (context, snapshot) {
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.only(
-                        top: 8.0, bottom: 60.0, right: 10.0, left: 10.0),
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      return MessageView(messages[index], users);
-                    },
+                  if (snapshot.hasData) {
+                    var msg = snapshot.data;
+                    return ListView.builder(
+                      controller: _scrollController,
+                      padding: EdgeInsets.only(
+                          top: 8.0, bottom: 60.0, right: 10.0, left: 10.0),
+                      itemCount: msg.length,
+                      itemBuilder: (context, index) {
+                        return MessageView(msg[index]);
+                      },
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text('Error in connection!'),
+                    );
+                  }
+                  return Center(
+                    child: CupertinoActivityIndicator(),
                   );
-                }),
-          ),
+                },
+              )),
           Positioned(
             bottom: 0.0,
             child: Container(
@@ -144,7 +195,6 @@ class _DMState extends State<DM> {
   }
 
   void _getMessage() async {
-    DBHelper dbHelper = new DBHelper();
     String username = await dbHelper.getUsername();
     users = username;
     socketChannel = IOWebSocketChannel.connect('wss://strong-roarer.glitch.me');
@@ -153,11 +203,12 @@ class _DMState extends State<DM> {
       if (jsonDecode(message)['type'] == 'message') {
         var data = jsonDecode(message)['data'];
         setState(() {
-          messages.add(Messages.fromJson(data));
           if (data['author'] == username) {
             chatDB.addchat(widget.user, data['text'], data['time'], 'sent');
+            messages.add(Messages.fromJson(data, 'sent'));
           } else {
             chatDB.addchat(widget.user, data['text'], data['time'], 'recieved');
+            messages.add(Messages.fromJson(data, 'recieved'));
           }
         });
         if (_scrollController.position.maxScrollExtent > 50 &&
