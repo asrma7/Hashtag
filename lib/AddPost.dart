@@ -100,11 +100,6 @@ class _AddPostState extends State<AddPost> {
                       child: TextFormField(
                         controller: _caption,
                         focusNode: focus,
-                        validator: (value) {
-                          if (value.isEmpty) {
-                            return 'Caption can\'t be empty';
-                          }
-                        },
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.black12,
@@ -152,8 +147,7 @@ class _AddPostState extends State<AddPost> {
                               tags = tags + "#" + tag[i];
                             }
                             focus.unfocus();
-                            if (_formKey.currentState.validate() &&
-                                _image != null) {
+                            if (_image != null) {
                               setState(() {
                                 enabled = false;
                               });

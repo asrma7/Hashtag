@@ -36,7 +36,6 @@ class _DMState extends State<DM> {
     String types;
     messages.clear();
     webmsg.clear();
-    messages = await chatDB.getChats(user);
     var session = await dbHelper.getSession();
     List<Cookie> cookies = [new Cookie("PHPSESSID", session)];
     var cj = new CookieJar();
@@ -70,6 +69,10 @@ class _DMState extends State<DM> {
     }
   }
 
+  Future<List<Messages>> getdbdata(String user) async{
+    return chatDB.getChats(user);
+  }
+
   WebSocketChannel socketChannel;
   @override
   void initState() {
@@ -85,6 +88,7 @@ class _DMState extends State<DM> {
       }
     });
     _getMessage();
+    getdata(widget.user);
     super.initState();
   }
 
@@ -113,7 +117,7 @@ class _DMState extends State<DM> {
           Container(
               color: Colors.white,
               child: FutureBuilder(
-                future: getdata(widget.user),
+                future: getdbdata(widget.user),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     var msg = snapshot.data;
