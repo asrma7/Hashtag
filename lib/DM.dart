@@ -123,6 +123,7 @@ class _DMState extends State<DM> {
                     var msg = snapshot.data;
                     return ListView.builder(
                       controller: _scrollController,
+                      reverse: true,
                       padding: EdgeInsets.only(
                           top: 8.0, bottom: 60.0, right: 10.0, left: 10.0),
                       itemCount: msg.length,
