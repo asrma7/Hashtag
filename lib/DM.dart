@@ -54,7 +54,7 @@ class _DMState extends State<DM> {
         webmsg.add(msg);
       }
     });
-    if (webmsg!=null) {
+    if (webmsg != null) {
       messages = webmsg;
       savemsg(webmsg);
     }
@@ -69,7 +69,7 @@ class _DMState extends State<DM> {
     }
   }
 
-  Future<List<Messages>> getdbdata(String user) async{
+  Future<List<Messages>> getdbdata(String user) async {
     return chatDB.getChats(user);
   }
 
@@ -216,12 +216,7 @@ class _DMState extends State<DM> {
             messages.add(Messages.fromJson(data, 'recieved'));
           }
         });
-        if (_scrollController.position.maxScrollExtent > 50 &&
-            _scrollController.position.pixels - 50 <
-                _scrollController.position.maxScrollExtent) {
-          _scrollController
-              .jumpTo(_scrollController.position.maxScrollExtent + 50);
-        }
+        _scrollController.jumpTo(0.0);
       } else if (jsonDecode(message)['type'] != null) {
         print(message);
       }
